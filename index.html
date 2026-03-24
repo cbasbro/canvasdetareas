@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planner | LaNegrita</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar no-print">
+            <div class="brand">
+                <div class="logo-box">LN</div>
+                <h2>Planner</h2>
+            </div>
+            
+            <div class="input-group">
+                <label>Nueva Actividad</label>
+                <input type="text" id="taskInput" placeholder="Nombre de la tarea...">
+            </div>
+            
+            <div class="input-group">
+                <label>Categoría</label>
+                <select id="categoryInput">
+                    <option value="actividad">Actividad Diaria</option>
+                    <option value="trabajo">Trabajo / Tarea</option>
+                    <option value="proyecto">Proyecto</option>
+                    <option value="examen">Examen Teórico</option>
+                    <option value="practico">Examen Práctico</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Fecha</label>
+                <input type="date" id="dateInput">
+            </div>
+
+            <div class="actions">
+                <button onclick="addTask()" class="btn-primary">Crear Tarea</button>
+                <button onclick="downloadPDF()" class="btn-outline">Generar PDF</button>
+                <button onclick="clearAll()" class="btn-danger">Limpiar Todo</button>
+            </div>
+        </aside>
+
+        <main class="canvas-area" id="canvas-print">
+            <div class="pdf-decoration no-mobile-deco"></div>
+            <header class="canvas-header">
+                <h1>Hoja de Ruta</h1>
+                <p id="current-date-display"></p>
+            </header>
+            
+            <div id="timeline-container" class="timeline"></div>
+        </main>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
