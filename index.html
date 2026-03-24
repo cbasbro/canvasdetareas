@@ -1,370 +1,537 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Planner | LN</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-        <style>
-            :root {
-                --primary: #8e2d4f;
-                --accent: #ff7495;
-                --accent-light: #ffebf0;
-                --bg: #fff5f7;
-                --sidebar-bg: #fff0f3;
-                --text: #4a343d;
-                --text-muted: #a38995;
-                --border: #f9d5e0;
-                --card-bg: #ffffff;
-                --baja: #a3e635;
-                --media: #fbbf24;
-                --alta: #f87171;
-            }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planner | LN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8e2d4f;
+            --accent: #ff7495;
+            --accent-light: #ffebf0;
+            --bg: #fff5f7;
+            --sidebar-bg: #fff0f3;
+            --text: #4a343d;
+            --text-muted: #a38995;
+            --border: #f9d5e0;
+            --card-bg: #ffffff;
+            --baja: #a3e635;
+            --media: #fbbf24;
+            --alta: #f87171;
+        }
 
-            * { box-sizing: border-box; transition: all 0.2s ease; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
 
-            body {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                background: var(--bg);
-                margin: 0;
-                color: var(--text);
-            }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            color: var(--text);
+        }
 
-            .app-container { display: flex; min-height: 100vh; }
+        /* ══════════════════════════════
+           LAYOUT BASE (ESCRITORIO)
+        ══════════════════════════════ */
+        .app-container { display: flex; min-height: 100vh; }
 
-            .sidebar {
-                width: 320px;
-                background: var(--sidebar-bg);
-                padding: 2.5rem;
-                height: 100vh;
-                position: fixed;
-                border-right: 2px solid var(--border);
-                z-index: 100;
-                overflow-y: auto;
-            }
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            padding: 2.5rem;
+            height: 100vh;
+            position: fixed;
+            border-right: 2px solid var(--border);
+            z-index: 100;
+            overflow-y: auto;
+        }
 
-            .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 2.5rem; }
-            .logo-box { background: var(--primary); color: white; padding: 10px 14px; border-radius: 12px; font-weight: 800; }
+        .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 2.5rem; }
+        .logo-box { background: var(--primary); color: white; padding: 10px 14px; border-radius: 12px; font-weight: 800; }
 
-            .canvas-area {
-                margin-left: 320px;
-                flex: 1;
-                padding: 5rem 2rem;
-                position: relative;
-                min-height: 100vh;
+        .canvas-area {
+            margin-left: 320px;
+            flex: 1;
+            padding: 5rem 2rem;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .canvas-area::before, .canvas-area::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background-image: url('https://www.transparentpng.com/download/floral/pink-flowers-border-png-17.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .canvas-area::before { top: 0; right: 0; }
+        .canvas-area::after  { bottom: 0; left: 0; transform: rotate(180deg); }
+
+        .canvas-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .canvas-header { text-align: center; margin-bottom: 3rem; }
+        .canvas-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin: 0;
+            color: var(--primary);
+            font-style: italic;
+        }
+
+        .timeline {
+            margin-top: 2rem;
+            border-left: 3px dashed var(--border);
+            padding-left: 40px;
+            margin-left: 20px;
+        }
+
+        .timeline-item { position: relative; margin-bottom: 3.5rem; }
+        .timeline-item::before {
+            content: '🌸';
+            position: absolute;
+            left: -53px; top: 5px;
+            font-size: 1.2rem;
+            z-index: 2;
+        }
+
+        .item-date { font-weight: 800; color: var(--accent); text-transform: lowercase; margin-bottom: 15px; }
+
+        .item-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(255, 116, 149, 0.1);
+            position: relative;
+            border-left: 8px solid var(--accent);
+            max-width: 100%;
+        }
+
+        .item-card[data-priority="alta"]  { border-left-color: var(--alta); }
+        .item-card[data-priority="media"] { border-left-color: var(--media); }
+        .item-card[data-priority="baja"]  { border-left-color: var(--baja); }
+
+        .item-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            margin: 10px 0;
+            color: var(--primary);
+            overflow-wrap: break-word;
+        }
+
+        .note-display {
+            font-size: 1rem; color: #6a4a58; padding: 15px;
+            background: var(--accent-light); border-radius: 15px;
+            line-height: 1.6; cursor: pointer; min-height: 50px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .note-display:empty::before { content: "🌸 Haz clic para añadir nota..."; opacity: 0.5; font-style: italic; }
+
+        .note-input {
+            width: 100%; padding: 15px; border: 2px solid var(--accent);
+            border-radius: 15px; font-family: inherit; font-size: 1rem;
+            resize: none; display: none; background: white;
+            overflow-wrap: break-word;
+        }
+
+        .btn-delete {
+            position: absolute; top: 1.5rem; right: 1.5rem;
+            background: none; border: none; color: var(--text-muted);
+            font-weight: 700; font-size: 0.75rem; cursor: pointer;
+        }
+
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; }
+        input, select {
+            width: 100%; padding: 14px; border: 2px solid var(--border);
+            border-radius: 12px; margin-bottom: 15px; background: white; font-family: inherit;
+        }
+
+        .btn-primary {
+            width: 100%; background: var(--primary); color: white; border: none;
+            padding: 18px; border-radius: 15px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(142, 45, 79, 0.3);
+        }
+        .btn-outline {
+            width: 100%; background: transparent; border: 2px solid var(--primary);
+            color: var(--primary); padding: 15px; border-radius: 15px; margin-top: 10px;
+            font-weight: 700; cursor: pointer;
+        }
+
+        .no-print { display: block; }
+        .is-exporting .no-print { display: none !important; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(142, 45, 79, 0.2); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-box {
+            background: white; padding: 2.5rem; border-radius: 30px;
+            max-width: 400px; width: 90%; text-align: center;
+            border: 3px solid var(--accent); position: relative;
+        }
+
+        /* ══════════════════════════════
+           CABECERA MÓVIL (oculta en escritorio)
+        ══════════════════════════════ */
+        .mobile-header {
+            display: none;
+        }
+
+        /* ══════════════════════════════
+           RESPONSIVE — MÓVIL (≤ 768px)
+        ══════════════════════════════ */
+        @media (max-width: 768px) {
+
+            /* Cabecera sticky superior */
+            .mobile-header {
                 display: flex;
-                justify-content: center;
+                align-items: center;
+                justify-content: space-between;
+                background: var(--sidebar-bg);
+                border-bottom: 2px solid var(--border);
+                padding: 0.9rem 1.2rem;
+                position: sticky;
+                top: 0;
+                z-index: 200;
             }
-
-            .canvas-area::before, .canvas-area::after {
-                content: '';
-                position: absolute;
-                width: 400px; height: 400px;
-                background-image: url('https://www.transparentpng.com/download/floral/pink-flowers-border-png-17.png');
-                background-size: contain;
-                background-repeat: no-repeat;
-                opacity: 0.3;
-                pointer-events: none;
-                z-index: 0;
-            }
-            .canvas-area::before { top: 0; right: 0; }
-            .canvas-area::after { bottom: 0; left: 0; transform: rotate(180deg); }
-
-            .canvas-content { 
-                position: relative; 
-                z-index: 1; 
-                width: 100%;
-                max-width: 800px;
-            }
-
-            .canvas-header { text-align: left; margin-bottom: 3rem; }
-            .canvas-header h1 {
-                font-family: 'Playfair Display', serif;
-                font-size: 3.5rem;
-                margin: 0;
-                color: var(--primary);
-                font-style: italic;
-            }
-
-            .timeline {
-                margin-top: 2rem;
-                border-left: 3px dashed var(--border);
-                padding-left: 40px;
-                margin-left: 20px;
-            }
-
-            .timeline-item { position: relative; margin-bottom: 3.5rem; }
-            .timeline-item::before {
-                content: '🌸';
-                position: absolute;
-                left: -53px; top: 5px;
-                font-size: 1.2rem;
-                z-index: 2;
-            }
-
-            .item-date { font-weight: 800; color: var(--accent); text-transform: lowercase; margin-bottom: 15px; }
-
-            .item-card {
-                background: var(--card-bg);
+            .mobile-header .brand { margin-bottom: 0; }
+            .btn-toggle {
+                background: var(--accent-light);
                 border: 2px solid var(--border);
-                padding: 2rem;
-                border-radius: 24px;
-                box-shadow: 0 10px 25px rgba(255, 116, 149, 0.1);
-                position: relative;
-                border-left: 8px solid var(--accent);
-                max-width: 100%; /* Evita que la tarjeta crezca de más */
-            }
-
-            .item-card[data-priority="alta"] { border-left-color: var(--alta); }
-            .item-card[data-priority="media"] { border-left-color: var(--media); }
-            .item-card[data-priority="baja"] { border-left-color: var(--baja); }
-
-            .item-card h3 { 
-                font-family: 'Playfair Display', serif; 
-                font-size: 1.6rem; 
-                margin: 10px 0; 
+                border-radius: 10px;
+                padding: 7px 13px;
+                font-size: 1.1rem;
+                cursor: pointer;
                 color: var(--primary);
-                overflow-wrap: break-word; /* También por si el título es largo */
+                font-weight: 800;
+                line-height: 1;
             }
 
-            .note-display {
-                font-size: 1rem; color: #6a4a58; padding: 15px;
-                background: var(--accent-light); border-radius: 15px;
-                line-height: 1.6; cursor: pointer; min-height: 50px;
-                /* AQUÍ ESTÁ EL ARREGLO */
-                overflow-wrap: break-word;
-                word-wrap: break-word;
-                word-break: break-word;
-                white-space: pre-wrap;
-            }
-            .note-display:empty::before { content: "🌸 Haz clic para añadir nota..."; opacity: 0.5; font-style: italic; }
+            /* Layout vertical */
+            .app-container { flex-direction: column; }
 
-            .note-input {
-                width: 100%; padding: 15px; border: 2px solid var(--accent);
-                border-radius: 15px; font-family: inherit; font-size: 1rem;
-                resize: none; display: none; background: white;
-                /* AQUÍ TAMBIÉN */
-                overflow-wrap: break-word;
+            /* Sidebar: panel flotante deslizante */
+            .sidebar {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%;
+                height: 100vh;
+                z-index: 150;
+                padding: 1.2rem 1.5rem 2rem;
+                transform: translateY(-110%);
+                transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+                overflow-y: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border);
             }
+            .sidebar.is-open { transform: translateY(0); }
 
-            .btn-delete {
-                position: absolute; top: 1.5rem; right: 1.5rem;
-                background: none; border: none; color: var(--text-muted);
-                font-weight: 700; font-size: 0.75rem; cursor: pointer;
+            /* Fila superior del panel con botón cerrar */
+            .sidebar-close {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 1rem;
             }
-
-            .input-group label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; }
-            input, select { 
-                width: 100%; padding: 14px; border: 2px solid var(--border); 
-                border-radius: 12px; margin-bottom: 15px; background: white; font-family: inherit;
-            }
-
-            .btn-primary { 
-                width: 100%; background: var(--primary); color: white; border: none; 
-                padding: 18px; border-radius: 15px; font-weight: 800; cursor: pointer;
-                box-shadow: 0 4px 15px rgba(142, 45, 79, 0.3);
-            }
-            .btn-outline { 
-                width: 100%; background: transparent; border: 2px solid var(--primary); 
-                color: var(--primary); padding: 15px; border-radius: 15px; margin-top: 10px;
-                font-weight: 700; cursor: pointer;
+            .btn-close {
+                background: none;
+                border: none;
+                font-size: 1.4rem;
+                cursor: pointer;
+                color: var(--text-muted);
+                padding: 4px 8px;
             }
 
-            .no-print { display: block; }
-            .is-exporting .no-print { display: none !important; }
+            /* Ocultar brand duplicado en el panel */
+            .sidebar .brand { display: none; }
 
-            .modal-overlay {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(142, 45, 79, 0.2); backdrop-filter: blur(5px);
-                display: none; justify-content: center; align-items: center; z-index: 2000;
+            /* Canvas sin margen izquierdo */
+            .canvas-area {
+                margin-left: 0;
+                padding: 2rem 1rem 3rem;
+                min-height: auto;
             }
-            .modal-box {
-                background: white; padding: 2.5rem; border-radius: 30px;
-                max-width: 400px; width: 90%; text-align: center;
-                border: 3px solid var(--accent); position: relative;
+
+            /* Flores más pequeñas */
+            .canvas-area::before,
+            .canvas-area::after {
+                width: 150px;
+                height: 150px;
+                opacity: 0.15;
             }
-        </style>
-    </head>
-    <body>
 
-        <div class="app-container" id="main-app">
-            <aside class="sidebar no-print">
-                <div class="brand">
-                    <div class="logo-box">LN</div>
-                    <h2 style="color: var(--primary); margin:0;">Planner</h2>
-                </div>
-                
-                <div class="input-group">
-                    <label>Actividad</label>
-                    <input type="text" id="taskInput" placeholder="Nombre de la tarea...">
-                </div>
-                
-                <div class="input-group">
-                    <label>Categoría</label>
-                    <select id="categoryInput">
-                        <option value="Examen">Examen</option>
-                        <option value="Tarea">Tarea</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Proyecto">Proyecto</option>
-                    </select>
-                </div>
+            /* Título compacto */
+            .canvas-header h1 { font-size: 2.2rem; }
+            .canvas-header p  { font-size: 0.85rem; }
 
-                <div class="input-group">
-                    <label>Prioridad</label>
-                    <select id="priorityInput">
-                        <option value="baja">Baja</option>
-                        <option value="media">Media</option>
-                        <option value="alta">Alta</option>
-                    </select>
-                </div>
+            /* Timeline estrecha */
+            .timeline { padding-left: 26px; margin-left: 8px; }
+            .timeline-item::before { left: -37px; font-size: 0.95rem; }
 
-                <div class="input-group">
-                    <label>Fecha</label>
-                    <input type="date" id="dateInput">
-                </div>
+            /* Tarjetas compactas */
+            .item-card { padding: 1rem 1rem 1rem 0.8rem; border-radius: 16px; }
+            .item-card h3 { font-size: 1.15rem; }
+            .note-display { font-size: 0.88rem; padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
 
-                <button onclick="addTask()" class="btn-primary">Crear 🌸</button>
-                <button onclick="downloadPDF()" class="btn-outline">Descargar PDF</button>
-                <button onclick="triggerModal('clear')" style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:20px; cursor:pointer; font-size: 0.8rem;">Limpiar todo</button>
-            </aside>
-
-            <main class="canvas-area">
-                <div class="canvas-content" id="export-container">
-                    <header class="canvas-header">
-                        <h1>Hoja de Ruta</h1>
-                        <p id="current-date-display" style="color: var(--accent); font-weight: 700; margin-top: 5px;"></p>
-                    </header>
-                    <div id="timeline-container" class="timeline"></div>
-                </div>
-            </main>
+    <!-- ── CABECERA FIJA EN MÓVIL ── -->
+    <div class="mobile-header" id="mobileHeader">
+        <div class="brand">
+            <div class="logo-box">LN</div>
+            <h2 style="color: var(--primary); margin:0;">Planner</h2>
         </div>
+        <button class="btn-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
 
-        <div id="customModal" class="modal-overlay">
-            <div class="modal-box">
-                <span style="font-size: 3rem;">🌸</span>
-                <h2 id="modalTitle">¿Estás segura?</h2>
-                <p id="modalText">Esta acción no se puede deshacer.</p>
-                <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
-                    <button class="btn-modal-confirm" id="modalConfirmBtn" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer;">Confirmar</button>
-                    <button onclick="closeModal()" style="flex:1; background:var(--accent-light); color:var(--primary); border:none; padding:12px; border-radius:12px; cursor:pointer;">Cancelar</button>
-                </div>
+    <div class="app-container" id="main-app">
+
+        <!-- ── SIDEBAR ── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-close no-print">
+                <button class="btn-close" onclick="toggleSidebar()">✕</button>
+            </div>
+
+            <div class="brand">
+                <div class="logo-box">LN</div>
+                <h2 style="color: var(--primary); margin:0;">Planner</h2>
+            </div>
+
+            <div class="input-group">
+                <label>Actividad</label>
+                <input type="text" id="taskInput" placeholder="Nombre de la tarea...">
+            </div>
+            <div class="input-group">
+                <label>Categoría</label>
+                <select id="categoryInput">
+                    <option value="Examen">Examen</option>
+                    <option value="Tarea">Tarea</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Proyecto">Proyecto</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Prioridad</label>
+                <select id="priorityInput">
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Fecha</label>
+                <input type="date" id="dateInput">
+            </div>
+
+            <button onclick="addTask()" class="btn-primary">Crear 🌸</button>
+            <button onclick="downloadPDF()" class="btn-outline">Descargar PDF</button>
+            <button onclick="triggerModal('clear')" style="background:none;border:none;color:var(--text-muted);width:100%;margin-top:20px;cursor:pointer;font-size:.8rem;">Limpiar todo</button>
+        </aside>
+
+        <!-- ── CANVAS ── -->
+        <main class="canvas-area">
+            <div class="canvas-content" id="export-container">
+                <header class="canvas-header">
+                    <h1>Hoja de Ruta</h1>
+                    <p id="current-date-display" style="color:var(--accent);font-weight:700;margin-top:5px;"></p>
+                </header>
+                <div id="timeline-container" class="timeline"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ── MODAL ── -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <span style="font-size:3rem;">🌸</span>
+            <h2 id="modalTitle">¿Estás segura?</h2>
+            <p id="modalText">Esta acción no se puede deshacer.</p>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button id="modalConfirmBtn" style="flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:12px;cursor:pointer;">Confirmar</button>
+                <button onclick="closeModal()" style="flex:1;background:var(--accent-light);color:var(--primary);border:none;padding:12px;border-radius:12px;cursor:pointer;">Cancelar</button>
             </div>
         </div>
+    </div>
 
-        <script>
-            let tasks = JSON.parse(localStorage.getItem('plannerAmigaVFinal')) || [];
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('plannerAmigaVFinal')) || [];
 
-            document.addEventListener('DOMContentLoaded', () => {
-                updateDate();
-                renderTasks();
-                document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate();
+            renderTasks();
+            document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+        });
+
+        /* ── Sidebar toggle ── */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('is-open');
+        }
+
+        // Cerrar al tocar fuera (móvil)
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const header  = document.getElementById('mobileHeader');
+            if (
+                window.innerWidth <= 768 &&
+                sidebar.classList.contains('is-open') &&
+                !sidebar.contains(e.target) &&
+                !header.contains(e.target)
+            ) {
+                sidebar.classList.remove('is-open');
+            }
+        });
+
+        function updateDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('es-ES', options);
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskInput').value.trim();
+            const date = document.getElementById('dateInput').value;
+            if (!name || !date) return;
+
+            tasks.push({
+                id: Date.now(),
+                name,
+                category: document.getElementById('categoryInput').value,
+                priority: document.getElementById('priorityInput').value,
+                date,
+                note: ""
             });
 
-            function updateDate() {
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('es-ES', options);
+            save();
+            document.getElementById('taskInput').value = "";
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('is-open');
             }
+        }
 
-            function addTask() {
-                const name = document.getElementById('taskInput').value;
-                const date = document.getElementById('dateInput').value;
-                if(!name || !date) return;
+        function renderTasks() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+            const sorted = [...tasks].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                tasks.push({
-                    id: Date.now(),
-                    name: name,
-                    category: document.getElementById('categoryInput').value,
-                    priority: document.getElementById('priorityInput').value,
-                    date: date,
-                    note: ""
-                });
+            sorted.forEach(t => {
+                const dateObj = new Date(t.date + 'T00:00:00');
+                const fmtDate = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
-                save();
-                document.getElementById('taskInput').value = "";
-            }
-
-            function renderTasks() {
-                const container = document.getElementById('timeline-container');
-                container.innerHTML = '';
-                const sorted = [...tasks].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                sorted.forEach(t => {
-                    const dateObj = new Date(t.date + 'T00:00:00');
-                    const fmtDate = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-
-                    const item = document.createElement('div');
-                    item.className = 'timeline-item';
-                    item.innerHTML = `
-                        <div class="item-date">${fmtDate}</div>
-                        <div class="item-card" data-priority="${t.priority}">
-                            <button onclick="triggerModal('delete', ${t.id})" class="btn-delete no-print">Eliminar</button>
-                            <small style="font-weight:800; color:var(--primary); text-transform:uppercase; font-size:0.7rem;">
-                                ${t.category} • ${t.priority} prioridad
-                            </small>
-                            <h3>${t.name}</h3>
-                            <div class="note-area">
-                                <div id="display-${t.id}" class="note-display" onclick="toggleEditNote(${t.id})">${t.note}</div>
-                                <textarea id="input-${t.id}" class="note-input" 
-                                    onblur="saveNote(${t.id})"
-                                    onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}">${t.note}</textarea>
-                            </div>
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <div class="item-date">${fmtDate}</div>
+                    <div class="item-card" data-priority="${t.priority}">
+                        <button onclick="triggerModal('delete', ${t.id})" class="btn-delete no-print">Eliminar</button>
+                        <small style="font-weight:800;color:var(--primary);text-transform:uppercase;font-size:.7rem;">
+                            ${t.category} • ${t.priority} prioridad
+                        </small>
+                        <h3>${t.name}</h3>
+                        <div class="note-area">
+                            <div id="display-${t.id}" class="note-display" onclick="toggleEditNote(${t.id})">${t.note}</div>
+                            <textarea id="input-${t.id}" class="note-input"
+                                onblur="saveNote(${t.id})"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${t.note}</textarea>
                         </div>
-                    `;
-                    container.appendChild(item);
-                });
-            }
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
 
-            function downloadPDF() {
-                const element = document.getElementById('export-container');
-                const app = document.getElementById('main-app');
-                app.classList.add('is-exporting');
+        function downloadPDF() {
+            const sorted = [...tasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const dateLabel = document.getElementById('current-date-display').innerText;
 
-                const opt = {
-                    margin:       [0.5, 0.5, 0.5, 0.5],
-                    filename:     'RutaDeTrabajos.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
+            let itemsHTML = '';
+            sorted.forEach(t => {
+                const dateObj = new Date(t.date + 'T00:00:00');
+                const fmtDate = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+                const noteHTML = t.note
+                    ? `<div style="font-size:.95rem;color:#6a4a58;padding:12px 15px;background:#ffebf0;border-radius:12px;line-height:1.6;">${t.note}</div>`
+                    : `<div style="font-size:.9rem;color:#c4a0af;font-style:italic;padding:12px 15px;background:#ffebf0;border-radius:12px;">Sin nota</div>`;
+                const bc = t.priority === 'alta' ? '#f87171' : t.priority === 'media' ? '#fbbf24' : '#a3e635';
 
-                html2pdf().set(opt).from(element).save().then(() => {
-                    app.classList.remove('is-exporting');
-                });
-            }
+                itemsHTML += `
+                    <div style="position:relative;margin-bottom:2.5rem;">
+                        <div style="font-weight:800;color:#ff7495;margin-bottom:12px;font-size:.95rem;">${fmtDate}</div>
+                        <div style="background:#fff;border:2px solid #f9d5e0;padding:1.5rem 1.8rem;border-radius:20px;border-left:8px solid ${bc};">
+                            <div style="font-size:.7rem;font-weight:800;color:#8e2d4f;text-transform:uppercase;letter-spacing:.05em;">${t.category} • ${t.priority} prioridad</div>
+                            <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin:8px 0 12px;color:#8e2d4f;">${t.name}</h3>
+                            ${noteHTML}
+                        </div>
+                    </div>
+                `;
+            });
 
-            function save() { localStorage.setItem('plannerAmigaVFinal', JSON.stringify(tasks)); renderTasks(); }
-            function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); save(); }
-            function clearAll() { tasks = []; save(); }
-            function triggerModal(type, id = null) {
-                const modal = document.getElementById('customModal');
-                const confirmBtn = document.getElementById('modalConfirmBtn');
-                document.getElementById('modalTitle').innerText = type === 'delete' ? "¡Cuidado!" : "¿Limpiar lienzo?";
-                confirmBtn.onclick = () => { type === 'delete' ? deleteTask(id) : clearAll(); closeModal(); };
-                modal.style.display = 'flex';
-            }
-            function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-            
-            function toggleEditNote(id) {
-                const display = document.getElementById(`display-${id}`);
-                const input = document.getElementById(`input-${id}`);
-                display.style.display = 'none';
-                input.style.display = 'block';
-                input.focus();
-            }
+            const clone = document.createElement('div');
+            clone.style.cssText = 'font-family:"Plus Jakarta Sans",sans-serif;background:#fff5f7;color:#4a343d;padding:60px 70px;width:816px;position:fixed;top:0;left:0;z-index:9999;opacity:0;pointer-events:none;';
+            clone.innerHTML = `
+                <div style="text-align:center;margin-bottom:3rem;">
+                    <h1 style="font-family:'Playfair Display',serif;font-size:3rem;margin:0;color:#8e2d4f;font-style:italic;">Hoja de Ruta</h1>
+                    <p style="color:#ff7495;font-weight:700;margin-top:5px;">${dateLabel}</p>
+                </div>
+                <div style="border-left:3px dashed #f9d5e0;padding-left:40px;margin-left:20px;">
+                    ${itemsHTML}
+                </div>
+            `;
+            document.body.appendChild(clone);
 
-            function saveNote(id) {
-                const display = document.getElementById(`display-${id}`);
-                const input = document.getElementById(`input-${id}`);
-                const index = tasks.findIndex(t => t.id === id);
-                if(index !== -1) {
-                    tasks[index].note = input.value;
-                    display.innerText = input.value;
-                    localStorage.setItem('plannerAmigaVFinal', JSON.stringify(tasks));
-                }
-                input.style.display = 'none';
-                display.style.display = 'block';
+            html2pdf().set({
+                margin:      [0.6, 0.5],
+                filename:    'Mi_Hoja_de_Ruta.pdf',
+                image:       { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#fff5f7' },
+                jsPDF:       { unit: 'in', format: 'letter', orientation: 'portrait' }
+            }).from(clone).save().then(() => document.body.removeChild(clone));
+        }
+
+        function save() { localStorage.setItem('plannerAmigaVFinal', JSON.stringify(tasks)); renderTasks(); }
+        function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); save(); }
+        function clearAll()  { tasks = []; save(); }
+
+        function triggerModal(type, id = null) {
+            const modal = document.getElementById('customModal');
+            document.getElementById('modalTitle').innerText = type === 'delete' ? "¡Cuidado!" : "¿Limpiar lienzo?";
+            document.getElementById('modalConfirmBtn').onclick = () => { type === 'delete' ? deleteTask(id) : clearAll(); closeModal(); };
+            modal.style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+
+        function toggleEditNote(id) {
+            document.getElementById(`display-${id}`).style.display = 'none';
+            const input = document.getElementById(`input-${id}`);
+            input.style.display = 'block';
+            input.focus();
+        }
+
+        function saveNote(id) {
+            const display = document.getElementById(`display-${id}`);
+            const input   = document.getElementById(`input-${id}`);
+            const index   = tasks.findIndex(t => t.id === id);
+            if (index !== -1) {
+                tasks[index].note = input.value;
+                display.innerText = input.value;
+                localStorage.setItem('plannerAmigaVFinal', JSON.stringify(tasks));
             }
-        </script>
-    </body>
-    </html>
+            input.style.display   = 'none';
+            display.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
