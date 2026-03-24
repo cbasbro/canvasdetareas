@@ -479,26 +479,65 @@
                 `;
             });
 
-            const clone = document.createElement('div');
-            clone.style.cssText = 'font-family:"Plus Jakarta Sans",sans-serif;background:#fff5f7;color:#4a343d;padding:60px 70px;width:816px;position:fixed;top:0;left:0;z-index:9999;opacity:0;pointer-events:none;';
-            clone.innerHTML = `
-                <div style="text-align:center;margin-bottom:3rem;">
-                    <h1 style="font-family:'Playfair Display',serif;font-size:3rem;margin:0;color:#8e2d4f;font-style:italic;">Hoja de Ruta</h1>
-                    <p style="color:#ff7495;font-weight:700;margin-top:5px;">${dateLabel}</p>
-                </div>
-                <div style="border-left:3px dashed #f9d5e0;padding-left:40px;margin-left:20px;">
-                    ${itemsHTML}
-                </div>
-            `;
-            document.body.appendChild(clone);
+            // Documento HTML completo para el iframe — tiene su propio viewport de 816px
+            const iframeDoc = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=816px, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 816px; background: #fff5f7; font-family: 'Plus Jakarta Sans', sans-serif; color: #4a343d; }
+</style>
+</head>
+<body>
+<div id="pdf-root" style="padding:60px 70px;width:816px;background:#fff5f7;">
+  <div style="text-align:center;margin-bottom:3rem;">
+    <h1 style="font-family:'Playfair Display',serif;font-size:3rem;margin:0;color:#8e2d4f;font-style:italic;">Hoja de Ruta</h1>
+    <p style="color:#ff7495;font-weight:700;margin-top:5px;">${dateLabel}</p>
+  </div>
+  <div style="border-left:3px dashed #f9d5e0;padding-left:40px;margin-left:20px;">
+    ${itemsHTML}
+  </div>
+</div>
+<script>
+  // Esperar a que las fuentes carguen antes de generar
+  document.fonts.ready.then(() => {
+    const el = document.getElementById('pdf-root');
+    html2pdf().set({
+      margin:      [0.6, 0.5],
+      filename:    'Mi_Hoja_de_Ruta.pdf',
+      image:       { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#fff5f7', windowWidth: 816 },
+      jsPDF:       { unit: 'in', format: 'letter', orientation: 'portrait' }
+    }).from(el).save().then(() => {
+      // Avisar al padre que terminó
+      window.parent.postMessage('pdf-done', '*');
+    });
+  });
+<\/script>
+</body>
+</html>`;
 
-            html2pdf().set({
-                margin:      [0.6, 0.5],
-                filename:    'Mi_Hoja_de_Ruta.pdf',
-                image:       { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#fff5f7' },
-                jsPDF:       { unit: 'in', format: 'letter', orientation: 'portrait' }
-            }).from(clone).save().then(() => document.body.removeChild(clone));
+            // Crear iframe invisible
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;top:0;left:0;width:816px;height:1px;opacity:0;pointer-events:none;z-index:9999;border:none;';
+            document.body.appendChild(iframe);
+
+            // Escuchar cuando el PDF termine y limpiar
+            window.addEventListener('message', function onMsg(e) {
+                if (e.data === 'pdf-done') {
+                    window.removeEventListener('message', onMsg);
+                    setTimeout(() => document.body.removeChild(iframe), 500);
+                }
+            });
+
+            // Escribir el doc en el iframe
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(iframeDoc);
+            iframe.contentDocument.close();
         }
 
         function save() { localStorage.setItem('plannerAmigaVFinal', JSON.stringify(tasks)); renderTasks(); }
